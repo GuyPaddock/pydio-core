@@ -173,12 +173,12 @@ class FilesystemMounter extends AbstractMetaSource
         $UNC_PATH = $this->getOption($ctx, "UNC_PATH", $user, $password, false);
         $MOUNT_OPTIONS = $this->getOption($ctx, "MOUNT_OPTIONS", $user, $password, false);
 
-        $cmd = $udevil."mount -t " .escapeshellarg($MOUNT_TYPE) .(empty( $MOUNT_OPTIONS )? " " : " -o " .escapeshellarg($MOUNT_OPTIONS). " " ) .escapeshellarg($UNC_PATH). " " .escapeshellarg($MOUNT_POINT);
+        $cmd = $udevil."mount -t " .escapeshellarg($MOUNT_TYPE) .(empty( $MOUNT_OPTIONS )? " " : " -o " .escapeshellarg($MOUNT_OPTIONS). " " ) .escapeshellarg($UNC_PATH). " " .escapeshellarg($MOUNT_POINT). " 2>&1";
         $res = null;
         if($this->getOption($ctx, "MOUNT_ENV_PASSWD") == true){
             putenv("PASSWD=$password");
         }
-        system($cmd, $res);
+        exec($cmd, $mount_output_lines, $res);
         if($this->getOption($ctx, "MOUNT_ENV_PASSWD") == true){
             putenv("PASSWD=");
         }
@@ -198,7 +198,9 @@ class FilesystemMounter extends AbstractMetaSource
             $success = (in_array($res, $acceptedResults));
         }
         if (!$success) {
-            throw new \Exception("Error while mounting file system!");
+            $mount_error_str = join("\n", $mount_output_lines);
+
+            throw new \Exception("Error while mounting file system: " . $mount_error_str);
         } else {
             if ($recycle !== false && !is_dir($recycle)) {
                 @mkdir($recycle, 0755);
