@@ -183,26 +183,28 @@ class smb
         $port = ($purl['port'] <> 139 ? ' -p ' . escapeshellarg ($purl['port']) : '');
         $options = '-O ' . escapeshellarg(SMB4PHP_SMBOPTIONS);
 
-        self::debug("SMBCLIENT", " {$options} {$port} {$params} 2>/dev/null [auth data]");
-
         $info = array ();
 
         if (PHP_OS == "WIN32" || PHP_OS == "WINNT" || PHP_OS == "Windows") {
             $params = ConvSmbParameterToWinOs($params);
         }
 
-        $cmd = SMB4PHP_SMBCLIENT." {$options} {$port} {$params} {$auth}";
+        $base_cmd = SMB4PHP_SMBCLIENT . " {$options} {$port} {$params}";
+
+        self::debug("{$base_cmd} [auth data]");
+
+        $full_cmd = $base_cmd." {$auth}";
 
         $descriptorspec = array(
-            0 => array("pipe", "r"),  	// stdin is a pipe that the child will read from
-            1 => array("pipe", "w"),  	// stdout is a pipe that the child will write to
-            2 => array("pipe", "rw") 	// stderr is a pipe to write to
+            0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
+            1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
+            2 => array("pipe", "rw")  // stderr is a pipe to write to
         );
         $env = null;
         if (defined('AJXP_LOCALE') && stripos(PHP_OS, "win") === false) {
             $env = array("LC_ALL" => AJXP_LOCALE);
         }
-        $process = proc_open($cmd, $descriptorspec, $pipes, null, $env);
+        $process = proc_open($full_cmd, $descriptorspec, $pipes, null, $env);
         try {
             if (is_resource($process)) {
                 fclose($pipes[0]);
