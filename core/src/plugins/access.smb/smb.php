@@ -182,17 +182,17 @@ class smb
         }
         $port = ($purl['port'] <> 139 ? ' -p ' . escapeshellarg ($purl['port']) : '');
         $options = '-O ' . escapeshellarg(SMB4PHP_SMBOPTIONS);
-        //self::debug($auth);
-        self::debug("SMBCLIENT", " -N {$options} {$port} {$options} {$params} 2>/dev/null [auth data]");
-    //self::debug("I just ran an smbclient call");
-        //$output = popen (SMB4PHP_SMBCLIENT." -N {$options} {$port} {$options} {$params} 2>/dev/null {$auth}", 'r');
+
+        self::debug("SMBCLIENT", " {$options} {$port} {$params} 2>/dev/null [auth data]");
+
         $info = array ();
 
         if (PHP_OS == "WIN32" || PHP_OS == "WINNT" || PHP_OS == "Windows") {
             $params = ConvSmbParameterToWinOs($params);
-            }
-	
-        $cmd = SMB4PHP_SMBCLIENT." -N {$options} {$port} {$options} {$params} {$auth}";
+        }
+
+        $cmd = SMB4PHP_SMBCLIENT." {$options} {$port} {$params} {$auth}";
+
         $descriptorspec = array(
             0 => array("pipe", "r"),  	// stdin is a pipe that the child will read from
             1 => array("pipe", "w"),  	// stdout is a pipe that the child will write to
